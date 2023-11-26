@@ -1,7 +1,8 @@
 import pandas as pandas
-import NeuralNet
+from NeuralNet import * 
 
 
 Pandas_Data = pandas.read_csv("midtermProject-part1-TRAIN.csv")
 
-TrainNeuralNetwork(Pandas_Data)
+# insert layer counts array without the input layer
+TrainNeuralNetwork(Pandas_Data,[3,1],1)

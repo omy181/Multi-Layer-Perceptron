@@ -1,7 +1,9 @@
-import pandas
+from pandas import read_csv
 from NeuralNet import * 
 
-Pandas_Data = pandas.read_csv("midtermProject-part1-TRAIN.csv")
+TrainData = read_csv("midtermProject-part1-TRAIN.csv")
+TestData = read_csv("midtermProject-part1-TEST.csv")
 
-TrainNeuralNetwork()
+model = TrainNeuralNetwork(TrainData,[3,1],TruthLabel="ANGLE-ACC-ARM",learning_rate=0.01,epoch=100)
 
+TestNeuralNetwork(model,TestData,TruthLabel="ANGLE-ACC-ARM")

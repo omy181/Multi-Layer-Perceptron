@@ -3,6 +3,23 @@ import numpy
 import torch as torch
 import torch.nn as nn
 import torch.nn.functional as f
+from torcheval.metrics import R2Score
+
+def MeanAbsoluteError(prediction_list,truth_list):
+    return (sum(abs(prediction_list-truth_list))/len(prediction_list)).detach().numpy()[0]
+
+def RootMeanSquaredError(prediction_list,truth_list):
+    diff = prediction_list-truth_list
+    return torch.sqrt(sum(diff*diff)/len(prediction_list)).detach().numpy()[0]
+
+def R2(prediction_list,truth_list):
+    metric = R2Score()
+    metric.update(prediction_list,truth_list)
+    return metric.compute()
+
+def MeanSquaredError(prediction_list,truth_list):
+    criterion = nn.MSELoss()
+    return criterion(prediction_list,truth_list)
 
 class Neural_Network(nn.Module):
 
@@ -69,14 +86,35 @@ def TrainNeuralNetwork(pandas_data:pandas.DataFrame,layers:list,TruthLabel,learn
         error.backward()
         optimizer.step()
 
-    
+    print(f"\nTrain set MSE: {MeanSquaredError(prediction_list,Train_labels)}")
+    print(f"Train set MAE: {MeanAbsoluteError(prediction_list,Train_labels)}")
+    print(f"Train set RMSE: {RootMeanSquaredError(prediction_list,Train_labels)}")
+    print(f"Train set R2: {R2(prediction_list,Train_labels)}")
     return model
 
 
 def TestNeuralNetwork(model:Neural_Network,pandas_data:pandas.DataFrame,TruthLabel):
 
+    # data preperation
+    Test_data = pandas_data.drop(TruthLabel,axis=1)
+    Test_labels = pandas_data[TruthLabel]
+
+    Test_data = torch.FloatTensor(Test_data.values)
+    Test_labels = torch.FloatTensor(Test_labels.values).unsqueeze(1)
+
+
+    prediction_list = model.forward_propogation(Test_data)
+
+    # test
+    criterion = nn.MSELoss()
+    error = criterion(prediction_list,Test_labels)
+
+    print(f"\nTest set MSE: {MeanSquaredError(prediction_list,Test_labels)}")
+    print(f"Test set MAE: {MeanAbsoluteError(prediction_list,Test_labels)}")
+    print(f"Test set RMSE: {RootMeanSquaredError(prediction_list,Test_labels)}")
+    print(f"Test set R2: {R2(prediction_list,Test_labels)}")
     
 
-    return 
-
-
+    """for prediction,TruthLabel in zip(prediction_list.detach().numpy(),Test_labels.detach().numpy()):
+        print(f"P/T: {TruthLabel -prediction} ")"""
+        
